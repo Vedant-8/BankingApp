@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <title>Add Account</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <h1>Add Account</h1>
+    <form action="/accounts" method="post">
+      <label for="accountHolderName">Account Holder Name:</label>
+      <input
+        type="text"
+        name="accountHolderName"
+        id="accountHolderName"
+        required
+      />
+      <br />
+      <label for="balance">Initial Balance:</label>
+      <input type="number" name="balance" id="balance" required />
+      <br />
+      <button type="submit">Save</button>
+    </form>
+  </body>
+</html>
