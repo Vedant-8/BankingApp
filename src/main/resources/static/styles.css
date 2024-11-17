@@ -1,3 +1,4 @@
+/* Body styles */
 body {
   font-family: Arial, sans-serif;
   background-color: #f4f4f4;
@@ -5,16 +6,19 @@ body {
   padding: 20px;
 }
 
+/* Heading 1 styles */
 h1 {
   color: #0056b3;
 }
 
+/* Table styling for account list */
 table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
 }
 
+/* Styling for table headers and cells */
 table,
 th,
 td {
@@ -27,6 +31,7 @@ td {
   text-align: left;
 }
 
+/* Link styling */
 a {
   text-decoration: none;
   color: #007bff;
@@ -34,4 +39,63 @@ a {
 
 a:hover {
   color: #0056b3;
+}
+
+/* Form and button custom styles */
+form {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+form input,
+form button {
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+form button {
+  padding: 10px;
+  background-color: #0056b3;
+  color: white;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+form button:hover {
+  background-color: #004080;
+}
+
+/* Navbar styles (custom to override default if needed) */
+.navbar {
+  margin-bottom: 30px;
+}
+
+.navbar-brand {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* Card component for forms */
+.card {
+  border-radius: 8px;
+}
+
+/* Footer styling */
+footer {
+  background-color: #0056b3;
+  color: white;
+  padding: 10px 0;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  z-index: 1000; /* ensures the footer is on top */
+}
+
+footer p {
+  margin: 0;
 }

@@ -1,5 +1,7 @@
 package com.bank.banking_app.controller;
 
+import java.util.List;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,8 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.bank.banking_app.dto.AccountDto;
 import com.bank.banking_app.service.AccountService;
-
-import java.util.List;
 
 @Controller
 public class WebController {
@@ -72,9 +72,14 @@ public class WebController {
     }
 
     @PostMapping("/accounts/{id}/withdraw")
-    public String withdraw(@PathVariable Long id, @RequestParam double amount) {
-        accountService.withdraw(id, amount);
-        return "redirect:/accounts/" + id;
+    public String withdraw(@PathVariable Long id, double amount, Model model) {
+        try {
+            accountService.withdraw(id, amount);
+            return "redirect:/accounts/{id}";
+        } catch (RuntimeException e) {
+            model.addAttribute("error", e.getMessage());
+            return "error"; // Points to a custom error page template
+        }
     }
 
     @GetMapping("/accounts/{id}/delete")
