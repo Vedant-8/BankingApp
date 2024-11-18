@@ -1,19 +1,22 @@
 package com.bank.banking_app.service.impl;
 
 import org.springframework.stereotype.Service;
-
 import com.bank.banking_app.dto.UserDto;
+import com.bank.banking_app.entity.TransactionType;
 import com.bank.banking_app.entity.User;
 import com.bank.banking_app.repository.UserRepository;
 import com.bank.banking_app.service.UserService;
+import com.bank.banking_app.service.TransactionService;
 
 @Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final TransactionService transactionService;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, TransactionService transactionService) {
         this.userRepository = userRepository;
+        this.transactionService = transactionService;
     }
 
     @Override
@@ -130,6 +133,9 @@ public class UserServiceImpl implements UserService {
         // Save both users
         userRepository.save(sender);
         userRepository.save(recipient);
+
+        // Log the transaction
+        transactionService.createTransaction(senderId, recipientId, amount, TransactionType.TRANSFER);
     }
 
     @Override

@@ -111,6 +111,10 @@
                 <strong>User ID:</strong> <span th:text="${user.id}"></span>
               </p>
               <p>
+                <strong>Name:</strong>
+                <span th:text="${user.username}"></span>
+              </p>
+              <p>
                 <strong>Wallet Balance:</strong> $<span
                   th:text="${user.walletBalance}"
                 ></span>
@@ -120,6 +124,20 @@
                   th:text="${user.bankBalance}"
                 ></span>
               </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transaction History Link -->
+        <div class="col-lg-4 mb-4">
+          <div class="card">
+            <div class="card-body text-center">
+              <h5 class="card-title">Transaction History</h5>
+              <a
+                class="btn btn-outline-primary"
+                th:href="@{/transactions?userId={userId}(userId=${user.id})}"
+                >View Transaction History</a
+              >
             </div>
           </div>
         </div>
@@ -181,8 +199,7 @@
       <div class="row">
         <div class="col-lg-12 mb-4">
           <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Send Money</h5>
+            <div class="card-body text-center">
               <form th:action="@{/wallet/send}" method="post">
                 <input type="hidden" name="senderId" th:value="${user.id}" />
                 <div class="mb-3">
@@ -210,7 +227,7 @@
                   />
                 </div>
                 <button type="submit" class="btn btn-primary w-100">
-                  Send Money
+                  Send Money to Users
                 </button>
               </form>
             </div>

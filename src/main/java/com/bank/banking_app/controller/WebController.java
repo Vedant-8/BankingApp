@@ -1,5 +1,6 @@
 package com.bank.banking_app.controller;
 
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.bank.banking_app.dto.UserDto;
+import com.bank.banking_app.entity.TransactionType;
+import com.bank.banking_app.service.TransactionService;
 import com.bank.banking_app.service.UserService;
 
 @Controller
@@ -19,9 +22,11 @@ public class WebController {
     private static final Logger logger = LoggerFactory.getLogger(WebController.class); // Logger instance
 
     private final UserService userService;
+    private final TransactionService transactionService;
 
-    public WebController(UserService userService) {
+    public WebController(UserService userService, TransactionService transactionService) {
         this.userService = userService;
+        this.transactionService = transactionService;
     }
 
     // Signup Page
@@ -70,15 +75,13 @@ public class WebController {
     // Profile Page
     @GetMapping("/profile/{id}")
     public String profilePage(@PathVariable Long id, Model model) {
-        logger.info("Accessing profile page for user ID: {}", id);
         UserDto user = userService.getUserById(id);
         if (user == null) {
-            logger.warn("No user found with ID: {}", id);
             model.addAttribute("error", "User not found");
-            return "error"; // Ensure an error.html template exists
+            return "error";
         }
         model.addAttribute("user", user);
-        logger.info("Profile page rendered for user: {}", user.getUsername());
+        model.addAttribute("transactions", transactionService.getTransactionsForUser(id));
         return "profile";
     }
 
@@ -114,20 +117,49 @@ public class WebController {
         }
     }
 
-    @PostMapping("/wallet/send")
-    public String sendMoney(
-            @RequestParam Long senderId,
-            @RequestParam Long recipientId,
-            @RequestParam double amount,
-            Model model
-    ) {
-        try {
-            userService.sendMoney(senderId, recipientId, amount);
-            return "redirect:/profile/" + senderId;
-        } catch (RuntimeException e) {
-            model.addAttribute("error", e.getMessage());
-            model.addAttribute("user", userService.getUserById(senderId)); // Ensure sender details are passed back
-            return "profile";
+    // Send Money - GET request for the send money page
+    @GetMapping("/wallet/send")
+    public String sendMoneyPage(@RequestParam Long userId, Model model) {
+        UserDto user = userService.getUserById(userId);
+        if (user == null) {
+            model.addAttribute("error", "User not found");
+            return "error";
         }
+        model.addAttribute("user", user); // Pass the user to the view
+        return "send-money"; // Render send-money.html
+    }
+
+    // Transaction History - GET request for transaction history page
+    @GetMapping("/transactions")
+public String transactionHistoryPage(@RequestParam Long userId, Model model) {
+    UserDto user = userService.getUserById(userId);
+    if (user == null) {
+        model.addAttribute("error", "User not found");
+        return "error";
+    }
+    model.addAttribute("user", user); // Pass the user to the view
+    model.addAttribute("transactions", transactionService.getTransactionsForUser(userId)); // Pass the transactions to the view
+    return "transactions"; // Render transactions.html
+}
+
+
+@PostMapping("/wallet/send")
+public String sendMoney(
+        @RequestParam Long senderId,
+        @RequestParam Long recipientId,
+        @RequestParam double amount,
+        Model model
+) {
+    try {
+        userService.sendMoney(senderId, recipientId, amount);
+        transactionService.createTransaction(senderId, recipientId, amount, TransactionType.TRANSFER);
+        return "redirect:/profile/" + senderId;
+    } catch (RuntimeException e) {
+        model.addAttribute("error", e.getMessage());
+        model.addAttribute("user", userService.getUserById(senderId));
+        return "profile";
     }
 }
+
+}
+

@@ -1,7 +1,9 @@
 package com.bank.banking_app.entity;
 
-import java.time.LocalDateTime;
-
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -9,37 +11,34 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
+import java.time.LocalDateTime;
+
 @Entity
-@Table(name = "transactions")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Transaction {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "sender_id", referencedColumnName = "id")
-    private User sender;
+    @Column(nullable = false)
+    private Long senderId;  // User who is sending money
 
-    @ManyToOne
-    @JoinColumn(name = "receiver_id", referencedColumnName = "id")
-    private User receiver;
+    @Column(nullable = false)
+    private Long recipientId;  // User who is receiving money
 
-    @Column(nullable = false, columnDefinition = "DECIMAL(15,2)")
-    private double amount;
+    @Column(nullable = false)
+    private Double amount;  // The amount of money in the transaction
 
-    
-    @Column(name = "transaction_type", nullable = false)
-    @Enumerated(EnumType.STRING) // Use EnumType.STRING or EnumType.ORDINAL based on preference
-    private TransactionType transactionType;
+    @Column(nullable = false)
+    private LocalDateTime transactionDate;  // Date and time when the transaction occurred
 
-    @Column(name = "timestamp", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime timestamp = LocalDateTime.now();
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TransactionType transactionType;  // Type of transaction (Deposit, Withdrawal, Transfer)
+
 }
