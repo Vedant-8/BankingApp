@@ -1,90 +1,133 @@
 package com.bank.banking_app.controller;
 
-import java.util.List;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.bank.banking_app.dto.AccountDto;
-import com.bank.banking_app.service.AccountService;
+import com.bank.banking_app.dto.UserDto;
+import com.bank.banking_app.service.UserService;
 
 @Controller
 public class WebController {
 
-    private final AccountService accountService;
+    private static final Logger logger = LoggerFactory.getLogger(WebController.class); // Logger instance
 
-    public WebController(AccountService accountService) {
-        this.accountService = accountService;
+    private final UserService userService;
+
+    public WebController(UserService userService) {
+        this.userService = userService;
     }
 
-    @GetMapping("/")
-    public String homePage(Model model) {
-        model.addAttribute("title", "Banking Application");
-        return "index";
+    // Signup Page
+    @GetMapping("/signup")
+    public String signupPage(Model model) {
+        logger.info("Accessing /signup endpoint for GET request");
+        model.addAttribute("user", new UserDto()); // Add UserDto object to model
+        return "signup"; // Render signup.html
     }
 
-    @GetMapping("/accounts")
-    public String viewAccounts(Model model) {
-        List<AccountDto> accounts = accountService.getAllAccounts();
-        model.addAttribute("accounts", accounts);
-        return "accounts";
-    }
-
-    @GetMapping("/accounts/new")
-    public String addAccountForm(Model model) {
-        model.addAttribute("account", new AccountDto());
-        return "add_account";
-    }
-
-    @PostMapping("/accounts")
-    public String saveAccount(AccountDto accountDto) {
-        accountService.createAccount(accountDto);
-        return "redirect:/accounts";
-    }
-
-    @GetMapping("/accounts/{id}")
-    public String viewAccountDetails(@PathVariable Long id, Model model) {
-        AccountDto account = accountService.getAccountById(id);
-        model.addAttribute("account", account);
-        return "account_details";
-    }
-
-    @GetMapping("/accounts/{id}/deposit")
-    public String depositForm(@PathVariable Long id, Model model) {
-        model.addAttribute("accountId", id);
-        return "deposit";
-    }
-
-    @PostMapping("/accounts/{id}/deposit")
-    public String deposit(@PathVariable Long id, @RequestParam double amount) {
-        accountService.deposit(id, amount);
-        return "redirect:/accounts/" + id;
-    }
-
-    @GetMapping("/accounts/{id}/withdraw")
-    public String withdrawForm(@PathVariable Long id, Model model) {
-        model.addAttribute("accountId", id);
-        return "withdraw";
-    }
-
-    @PostMapping("/accounts/{id}/withdraw")
-    public String withdraw(@PathVariable Long id, double amount, Model model) {
+    @PostMapping("/signup")
+    public String signup(@ModelAttribute UserDto userDto, Model model) {
+        logger.info("Received POST request to /signup with UserDto: {}", userDto);
         try {
-            accountService.withdraw(id, amount);
-            return "redirect:/accounts/{id}";
+            userService.createUser(userDto);
+            logger.info("User created successfully: {}", userDto.getUsername());
+            return "redirect:/signin";
         } catch (RuntimeException e) {
+            logger.error("Error occurred during signup: {}", e.getMessage(), e);
             model.addAttribute("error", e.getMessage());
-            return "error"; // Points to a custom error page template
+            return "signup";
         }
     }
 
-    @GetMapping("/accounts/{id}/delete")
-    public String deleteAccount(@PathVariable Long id) {
-        accountService.deleteAccount(id);
-        return "redirect:/accounts";
+    // Signin Page
+    @GetMapping("/signin")
+    public String signinPage() {
+        logger.info("Accessing /signin endpoint for GET request");
+        return "signin";
+    }
+
+    @PostMapping("/signin")
+    public String signin(@RequestParam String username, @RequestParam String password, Model model) {
+        logger.info("Received POST request to /signin with username: {}", username);
+        try {
+            UserDto user = userService.signin(username, password);
+            logger.info("User signed in successfully: {}", username);
+            return "redirect:/profile/" + user.getId();
+        } catch (RuntimeException e) {
+            logger.error("Error occurred during signin for username {}: {}", username, e.getMessage(), e);
+            model.addAttribute("error", e.getMessage());
+            return "signin";
+        }
+    }
+
+    // Profile Page
+    @GetMapping("/profile/{id}")
+    public String profilePage(@PathVariable Long id, Model model) {
+        logger.info("Accessing profile page for user ID: {}", id);
+        UserDto user = userService.getUserById(id);
+        if (user == null) {
+            logger.warn("No user found with ID: {}", id);
+            model.addAttribute("error", "User not found");
+            return "error"; // Ensure an error.html template exists
+        }
+        model.addAttribute("user", user);
+        logger.info("Profile page rendered for user: {}", user.getUsername());
+        return "profile";
+    }
+
+    @PostMapping("/wallet/add")
+    public String addMoneyToWallet(
+            @RequestParam Long userId,
+            @RequestParam double amount,
+            Model model
+    ) {
+        try {
+            userService.addMoneyToWallet(userId, amount);
+            return "redirect:/profile/" + userId;
+        } catch (RuntimeException e) {
+            model.addAttribute("error", e.getMessage());
+            model.addAttribute("user", userService.getUserById(userId)); // Ensure user details are passed back
+            return "profile";
+        }
+    }
+
+    @PostMapping("/bank/deposit")
+    public String depositToBank(
+            @RequestParam Long userId,
+            @RequestParam double amount,
+            Model model
+    ) {
+        try {
+            userService.depositToBank(userId, amount);
+            return "redirect:/profile/" + userId;
+        } catch (RuntimeException e) {
+            model.addAttribute("error", e.getMessage());
+            model.addAttribute("user", userService.getUserById(userId)); // Ensure user details are passed back
+            return "profile";
+        }
+    }
+
+    @PostMapping("/wallet/send")
+    public String sendMoney(
+            @RequestParam Long senderId,
+            @RequestParam Long recipientId,
+            @RequestParam double amount,
+            Model model
+    ) {
+        try {
+            userService.sendMoney(senderId, recipientId, amount);
+            return "redirect:/profile/" + senderId;
+        } catch (RuntimeException e) {
+            model.addAttribute("error", e.getMessage());
+            model.addAttribute("user", userService.getUserById(senderId)); // Ensure sender details are passed back
+            return "profile";
+        }
     }
 }
