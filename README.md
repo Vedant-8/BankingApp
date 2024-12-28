@@ -1,4 +1,4 @@
-# Banking Application
+# Banking Application 
 
 A comprehensive **banking application** built using **Spring Boot** for the backend and a simple, responsive frontend using **HTML** and **Bootstrap CSS**. The application supports essential banking operations and is designed with a focus on functionality and user experience.
 
